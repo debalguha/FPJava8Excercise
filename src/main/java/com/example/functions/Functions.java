@@ -4,6 +4,7 @@ import com.example.cache.Person;
 import com.example.domain.Account;
 import com.example.domain.FxEntry;
 import com.example.domain.TransactionEntry;
+import com.example.domain.TransactionType;
 import cyclops.control.Try;
 
 import java.io.File;
@@ -69,6 +70,8 @@ public class Functions {
 
     public static TransactionEntry createTransactionEntry(String s) {
         String split[] = s.split(",", -1);
-
+        Person person = new Person(stream(split).skip(4).collect(joining()));
+        return new TransactionEntry(Long.valueOf(split[0]), Long.valueOf(split[1]), new BigDecimal(split[2]), TransactionType.valueOf(split[3]),
+                person);
     }
 }

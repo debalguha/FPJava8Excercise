@@ -6,13 +6,13 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class TransactionEntry {
-    public final Long transactionId;
-    public final Long accountId;
+    public final long transactionId;
+    public final long accountId;
     public final BigDecimal transactionAmount;
     public final TransactionType transactionType;
     public final Person person;
 
-    public TransactionEntry(Long transactionId, Long accountId, BigDecimal transactionAmount, TransactionType transactionType, Person person) {
+    public TransactionEntry(long transactionId, long accountId, BigDecimal transactionAmount, TransactionType transactionType, Person person) {
         this.transactionId = transactionId;
         this.accountId = accountId;
         this.transactionAmount = transactionAmount;
