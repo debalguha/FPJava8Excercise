@@ -1,6 +1,5 @@
 package com.example.functions;
 
-import com.google.common.base.Function;
 import cyclops.control.Try;
 
 import java.io.File;
@@ -10,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,7 +26,7 @@ public class Functions {
         return s.split(",").length == numcColumns;
     }
 
-    public <T, K, V> Map<K, V> createFromFile(File fxFile, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
+    public static <T, K, V> Map<K, V> createFromFile(File fxFile, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
         return withCatch(fileDataSupplier(fxFile), IOException.class)
                 .onFail(e -> {throw new RuntimeException("Unable to read fx file");})
                 .map(lineMapperFunc)
