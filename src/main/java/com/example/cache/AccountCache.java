@@ -14,7 +14,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.example.functions.Functions.fileDataSuplier;
+import static com.example.functions.Functions.*;
 import static com.google.common.base.Strings.emptyToNull;
 import static cyclops.control.Try.withCatch;
 import static java.util.Arrays.stream;
@@ -35,19 +35,11 @@ public class AccountCache {
     }
 
     private List<Account> createAccounts(List<String> lines) {
-        return lines.stream().map(line -> fromLine(line))
+        return lines.stream().map(line -> fromLine(line, s -> createAccount(s)))
                 .flatMap(opt -> opt.map(v -> Stream.of(v)).orElse(Stream.empty()))
                 /*.filter(opt -> opt.isPresent())
                 .map(opt -> opt.get())*/
                 .collect(Collectors.toList());
-    }
-
-    private Optional<Account> fromLine(String inputLine) {
-        return ofNullable(emptyToNull(inputLine))
-                .filter(s -> !s.startsWith("#"))
-                .filter(s -> Functions.hasAllColumns(s, 6))
-                //Chain more validations
-                .map(s -> createAccount(s));
     }
 
     private Account createAccount(String s) {
