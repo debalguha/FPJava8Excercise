@@ -35,11 +35,7 @@ public class AccountCache {
     }
 
     private List<Account> createAccounts(List<String> lines) {
-        return lines.stream().map(line -> fromLine(line, s -> createAccount(s)))
-                .flatMap(opt -> opt.map(v -> Stream.of(v)).orElse(Stream.empty()))
-                /*.filter(opt -> opt.isPresent())
-                .map(opt -> opt.get())*/
-                .collect(Collectors.toList());
+        return createFromLines(lines, s -> createAccount(s));
     }
 
     private Account createAccount(String s) {

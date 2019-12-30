@@ -31,11 +31,7 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     }
 
     private List<FxEntry> createFxEntries(List<String> lines) {
-        return lines.stream().map(line -> fromLine(line, s -> createFXEntry(s)))
-                .flatMap(opt -> opt.map(v -> Stream.of(v)).orElse(Stream.empty()))
-                /*.filter(opt -> opt.isPresent())
-                .map(opt -> opt.get())*/
-                .collect(Collectors.toList());
+        return createFromLines(lines, s -> createFXEntry(s));
     }
 
     @Override
