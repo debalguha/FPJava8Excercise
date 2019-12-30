@@ -1,27 +1,37 @@
 package com.example.functions;
 
-import com.example.domain.Account;
-import com.example.domain.FxEntry;
 import com.google.common.base.Function;
 import cyclops.control.Try;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.emptyToNull;
+import static cyclops.control.Try.withCatch;
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toMap;
 
 public class Functions {
-    public static Try.CheckedSupplier<List<String>, IOException> fileDataSuplier(File inputFile) {
+    public static Try.CheckedSupplier<List<String>, IOException> fileDataSupplier(File inputFile) {
         return () -> Files.readAllLines(inputFile.toPath());
     }
     public static boolean hasAllColumns(String s, int numcColumns) {
         return s.split(",").length == numcColumns;
+    }
+
+    public <T, K, V> Map<K, V> createFromFile(File fxFile, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
+        return withCatch(fileDataSupplier(fxFile), IOException.class)
+                .onFail(e -> {throw new RuntimeException("Unable to read fx file");})
+                .map(lineMapperFunc)
+                .orElse(Collections.emptyList())
+                .stream().collect(toMap(keyFunc, valueFunc));
     }
 
     public static <T> List<T> createFromLines(List<String> lines, Function<String, T> func) {

@@ -1,16 +1,11 @@
 package com.example.cache;
 
 import com.example.domain.FxEntry;
-import com.example.functions.Functions;
-import cyclops.control.Try;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.example.functions.Functions.*;
 import static com.google.common.base.Strings.emptyToNull;
@@ -23,7 +18,7 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     private final Map<Currency, FxEntry> cacheMap;
 
     public FXCache(File fxFile) {
-        cacheMap = withCatch(fileDataSuplier(fxFile), IOException.class)
+        cacheMap = withCatch(fileDataSupplier(fxFile), IOException.class)
                 .onFail(e -> {throw new RuntimeException("Unable to read fx file");})
                 .map(lines -> createFxEntries(lines))
                 .orElse(Collections.emptyList())
