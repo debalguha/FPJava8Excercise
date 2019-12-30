@@ -10,8 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import static com.example.functions.Functions.createFXEntry;
-import static com.example.functions.Functions.createFromLines;
+import static com.example.functions.Functions.*;
 import static java.util.Optional.ofNullable;
 import static java.util.function.Function.identity;
 
@@ -20,7 +19,7 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     private final Map<Currency, FxEntry> cacheMap;
 
     public FXCache(File fxFile) {
-        cacheMap = Functions.createFromFile(fxFile, this::createFxEntries, f -> f.from, identity());
+        cacheMap = createFromFile(fxFile, this::createFxEntries, f -> f.from, identity());
     }
 
     private List<FxEntry> createFxEntries(List<String> lines) {

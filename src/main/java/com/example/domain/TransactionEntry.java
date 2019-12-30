@@ -1,5 +1,7 @@
 package com.example.domain;
 
+import com.example.cache.Person;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -8,28 +10,14 @@ public class TransactionEntry {
     public final Long accountId;
     public final BigDecimal transactionAmount;
     public final TransactionType transactionType;
+    public final Person person;
 
-    public TransactionEntry(Long transactionId, Long accountId, BigDecimal transactionAmount, TransactionType transactionType) {
+    public TransactionEntry(Long transactionId, Long accountId, BigDecimal transactionAmount, TransactionType transactionType, Person person) {
         this.transactionId = transactionId;
         this.accountId = accountId;
         this.transactionAmount = transactionAmount;
         this.transactionType = transactionType;
-    }
-
-    public Long getTransactionId() {
-        return transactionId;
-    }
-
-    public Long getAccountId() {
-        return accountId;
-    }
-
-    public BigDecimal getTransactionAmount() {
-        return transactionAmount;
-    }
-
-    public TransactionType getTransactionType() {
-        return transactionType;
+        this.person = person;
     }
 
     @Override
@@ -52,6 +40,7 @@ public class TransactionEntry {
                 ", accountId=" + accountId +
                 ", transactionAmount=" + transactionAmount +
                 ", transactionType=" + transactionType +
+                ", person=" + person +
                 '}';
     }
 }

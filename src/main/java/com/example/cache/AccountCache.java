@@ -2,23 +2,11 @@ package com.example.cache;
 
 import com.example.domain.Account;
 
-import java.io.File;
-import java.util.List;
-import java.util.Map;
+import java.util.Date;
+import java.util.Optional;
 
-import static com.example.functions.Functions.*;
-import static java.util.function.Function.identity;
-
-public class AccountCache {
-
-    private Map<Person, Account> cache;
-
-    public AccountCache(File accountFile) {
-        cache = createFromFile(accountFile, this::createAccounts, a -> a.person, identity());
-    }
-
-    private List<Account> createAccounts(List<String> lines) {
-        return createFromLines(lines, s -> createAccount(s));
-    }
-
+public interface AccountCache {
+    Optional<Account> findByAccountId(long accountId);
+    Optional<Account> findByLastNameAndDOB(String lastName, Date dob);
+    Optional<Account> findByLastNameAndTFNAndDOB(String lastName, String tfn, Date dob);
 }

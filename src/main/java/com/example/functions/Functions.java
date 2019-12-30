@@ -3,6 +3,7 @@ package com.example.functions;
 import com.example.cache.Person;
 import com.example.domain.Account;
 import com.example.domain.FxEntry;
+import com.example.domain.TransactionEntry;
 import cyclops.control.Try;
 
 import java.io.File;
@@ -11,6 +12,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,5 +65,10 @@ public class Functions {
     public static FxEntry createFXEntry(String s) {
         String[] split = s.split(",", -1);
         return new FxEntry(Currency.getInstance(split[0]), Currency.getInstance("AUD"), Double.valueOf(split[1]), ofNullable(emptyToNull(split[2])));
+    }
+
+    public static TransactionEntry createTransactionEntry(String s) {
+        String split[] = s.split(",", -1);
+
     }
 }

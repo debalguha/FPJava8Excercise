@@ -1,0 +1,1 @@
+From Currency, To Currency, Rate, Via Currency
