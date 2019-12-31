@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 import static com.example.functions.Functions.*;
 import static java.util.function.Function.identity;
@@ -20,7 +21,8 @@ public class AccountCacheImpl implements AccountCache{
     }
 
     private List<Account> createAccounts(List<String> lines) {
-        return createFromLines(lines, s -> createAccount(s), nullOrEmptyLinesPredicate, commentedLinesPredicate, columnNumberPredicateFunc.apply(6));
+        Predicate<String> validationPredicate = nullOrEmptyLinesPredicate.and(commentedLinesPredicate).and(columnNumberPredicateFunc.apply(3));
+        return createFromLines(lines, s -> createAccount(s), validationPredicate);
     }
 
     @Override

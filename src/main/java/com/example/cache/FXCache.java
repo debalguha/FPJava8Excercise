@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import static com.example.functions.Functions.*;
 import static java.util.Optional.ofNullable;
@@ -22,7 +23,8 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     }
 
     private List<FxEntry> createFxEntries(List<String> lines) {
-        return createFromLines(lines, s -> createFXEntry(s), nullOrEmptyLinesPredicate, commentedLinesPredicate, columnNumberPredicateFunc.apply(3));
+        Predicate<String> validationPredicate = nullOrEmptyLinesPredicate.and(commentedLinesPredicate).and(columnNumberPredicateFunc.apply(3));
+        return createFromLines(lines, s -> createFXEntry(s), validationPredicate);
     }
 
     @Override

@@ -11,11 +11,13 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Collections;
+import java.util.Currency;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.google.common.base.Strings.emptyToNull;
 import static cyclops.control.Try.withCatch;
@@ -31,9 +33,6 @@ public class Functions {
     public static Try.CheckedSupplier<List<String>, IOException> fileDataSupplier(File inputFile) {
         return () -> Files.readAllLines(inputFile.toPath());
     }
-    public static boolean hasAllColumns(String s, int numcColumns) {
-        return s.split(",").length == numcColumns;
-    }
 
     public static <T, K, V> Map<K, V> createFromFile(File fxFile, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
         return withCatch(fileDataSupplier(fxFile), IOException.class)
@@ -43,11 +42,9 @@ public class Functions {
                 .stream().collect(toMap(keyFunc, valueFunc));
     }
 
-    public static <T> List<T> createFromLines(List<String> lines, Function<String, T> func, Predicate<String> nullOrEmptyLinesPredicate, Predicate<String> commentPredicate, Predicate<String> columnNumberPredicate) {
+    public static <T> List<T> createFromLines(List<String> lines, Function<String, T> func, Predicate<String> validationPredicate) {
         return lines.stream()
-                .filter(nullOrEmptyLinesPredicate)
-                .filter(commentPredicate)
-                .filter(columnNumberPredicate)
+                .filter(validationPredicate)
                 .map(func)
                 .collect(Collectors.toList());
     }
