@@ -22,7 +22,7 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     }
 
     private List<FxEntry> createFxEntries(List<String> lines) {
-        return createFromLines(lines, s -> createFXEntry(s));
+        return createFromLines(lines, s -> createFXEntry(s), nullOrEmptyLinesPredicate, commentedLinesPredicate, columnNumberPredicateFunc.apply(3));
     }
 
     @Override

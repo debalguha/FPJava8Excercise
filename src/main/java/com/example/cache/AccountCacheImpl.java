@@ -20,7 +20,7 @@ public class AccountCacheImpl implements AccountCache{
     }
 
     private List<Account> createAccounts(List<String> lines) {
-        return createFromLines(lines, s -> createAccount(s));
+        return createFromLines(lines, s -> createAccount(s), nullOrEmptyLinesPredicate, commentedLinesPredicate, columnNumberPredicateFunc.apply(6));
     }
 
     @Override
