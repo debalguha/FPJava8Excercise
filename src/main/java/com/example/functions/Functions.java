@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.toMap;
 public class Functions {
     public static Predicate<String> nullOrEmptyLinesPredicate = s -> ofNullable(s).orElse("").isEmpty();
     public static Predicate<String> commentedLinesPredicate = s -> s.startsWith("#");
-    public static Predicate<String> columnNumberPredicate = s -> s.split(",", -1).length ==
+    public static Function<Integer, Predicate<String>> columnNumberPredicateFunc = i -> s -> s.split(",", -1).length == i;
     public static Try.CheckedSupplier<List<String>, IOException> fileDataSupplier(File inputFile) {
         return () -> Files.readAllLines(inputFile.toPath());
     }
@@ -43,20 +43,13 @@ public class Functions {
                 .stream().collect(toMap(keyFunc, valueFunc));
     }
 
-    public static <T> List<T> createFromLines(List<String> lines, Function<String, T> func, Predicate<String> commentPredicate, Predicate<String> columnNumberPredicate) {
-        return lines.stream().map(line -> fromLine(line, func, commentPredicate, columnNumberPredicate))
-                .flatMap(opt -> opt.map(v -> Stream.of(v)).orElse(Stream.empty()))
-                /*.filter(opt -> opt.isPresent())
-                .map(opt -> opt.get())*/
-                .collect(Collectors.toList());
-    }
-
-    public static <T> Optional<T> fromLine(String inputLine, Function<String, T> func, Predicate<String> commentPredicate, Predicate<String> columnNumberPredicate) {
-        return ofNullable(emptyToNull(inputLine))
+    public static <T> List<T> createFromLines(List<String> lines, Function<String, T> func, Predicate<String> nullOrEmptyLinesPredicate, Predicate<String> commentPredicate, Predicate<String> columnNumberPredicate) {
+        return lines.stream()
+                .filter(nullOrEmptyLinesPredicate)
                 .filter(commentPredicate)
                 .filter(columnNumberPredicate)
-                //Chain more validations
-                .map(func);
+                .map(func)
+                .collect(Collectors.toList());
     }
 
     public static Account createAccount(String s) {
