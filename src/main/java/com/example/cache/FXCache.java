@@ -1,7 +1,6 @@
 package com.example.cache;
 
 import com.example.domain.FxEntry;
-import com.example.functions.Functions;
 
 import java.io.File;
 import java.util.Currency;
