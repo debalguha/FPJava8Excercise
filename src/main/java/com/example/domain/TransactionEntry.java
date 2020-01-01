@@ -3,6 +3,7 @@ package com.example.domain;
 import com.example.cache.Person;
 
 import java.math.BigDecimal;
+import java.util.Currency;
 import java.util.Objects;
 
 public class TransactionEntry {
@@ -10,13 +11,15 @@ public class TransactionEntry {
     public final long accountId;
     public final BigDecimal transactionAmount;
     public final TransactionType transactionType;
+    public final Currency currency;
     public final Person person;
 
-    public TransactionEntry(long transactionId, long accountId, BigDecimal transactionAmount, TransactionType transactionType, Person person) {
+    public TransactionEntry(long transactionId, long accountId, BigDecimal transactionAmount, TransactionType transactionType, Currency currency, Person person) {
         this.transactionId = transactionId;
         this.accountId = accountId;
         this.transactionAmount = transactionAmount;
         this.transactionType = transactionType;
+        this.currency = currency;
         this.person = person;
     }
 
@@ -40,6 +43,7 @@ public class TransactionEntry {
                 ", accountId=" + accountId +
                 ", transactionAmount=" + transactionAmount +
                 ", transactionType=" + transactionType +
+                ", currency=" + currency +
                 ", person=" + person +
                 '}';
     }

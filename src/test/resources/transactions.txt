@@ -1,1 +1,1 @@
-Transaction Id, Account Id, Transaction Amount, Transaction Type, First Name, Last Name, TFN, DOB
+Transaction Id, Account Id, Transaction Amount, Transaction Type, Currency, First Name, Last Name, TFN, DOB
