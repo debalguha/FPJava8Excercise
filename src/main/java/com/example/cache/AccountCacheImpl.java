@@ -17,7 +17,7 @@ public class AccountCacheImpl implements AccountCache{
     private Map<Person, Account> cache;
 
     public AccountCacheImpl(File accountFile) {
-        cache = createFromFile(accountFile, this::createAccounts, a -> a.person, identity());
+        cache = createFromFile(() -> readFileToLines(accountFile), this::createAccounts, a -> a.person, identity());
     }
 
     private List<Account> createAccounts(List<String> lines) {

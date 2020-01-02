@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.emptyToNull;
@@ -37,7 +38,7 @@ public class Functions {
     };
     public static Function<Integer, Predicate<String>> columnNumberPredicateFunc = i -> s -> s.split(",", -1).length == i;
 
-    public static List<String> fileDataSupplier(File inputFile) {
+    public static List<String> readFileToLines(File inputFile) {
         try {
             return Files.readAllLines(inputFile.toPath());
         } catch (IOException e) {
@@ -45,9 +46,9 @@ public class Functions {
         }
     }
 
-    public static <T, K, V> Map<K, V> createFromFile(File inputFile, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
+    public static <T, K, V> Map<K, V> createFromFile(Supplier<List<String>> fileDataSupplier, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
 
-        return Try.doTry(() -> fileDataSupplier(inputFile))
+        return Try.doTry(fileDataSupplier)
                 .map(lineMapperFunc)
                 .orElse(emptyList())
                 .stream().collect(toMap(keyFunc, valueFunc));

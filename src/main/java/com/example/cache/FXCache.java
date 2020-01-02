@@ -19,7 +19,7 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     private final Map<Currency, FxEntry> cacheMap;
 
     public FXCache(File fxFile) {
-        cacheMap = createFromFile(fxFile, this::createFxEntries, f -> f.from, identity());
+        cacheMap = createFromFile(() -> readFileToLines(fxFile), this::createFxEntries, f -> f.from, identity());
     }
 
     private List<FxEntry> createFxEntries(List<String> lines) {
