@@ -19,6 +19,14 @@ public final class TransactionEntryBuilder {
     public static TransactionEntryBuilder aTransactionEntry() {
         return new TransactionEntryBuilder();
     }
+    public static TransactionEntryBuilder fromATransaction(TransactionEntry transactionEntry) {
+        return new TransactionEntryBuilder().withTransactionId(transactionEntry.transactionId)
+                .withAccountId(transactionEntry.accountId)
+                .withCurrency(transactionEntry.currency)
+                .withPerson(transactionEntry.person)
+                .withTransactionType(transactionEntry.transactionType)
+                .withTransactionAmount(transactionEntry.transactionAmount);
+    }
 
     public TransactionEntryBuilder withTransactionId(long transactionId) {
         this.transactionId = transactionId;

@@ -5,6 +5,7 @@ import com.example.cache.AccountCacheImpl;
 import com.example.cache.FXCache;
 import com.example.domain.Account;
 import com.example.domain.TransactionEntry;
+import com.example.domain.TransactionEntryBuilder;
 import com.example.domain.TransactionType;
 import com.example.functions.Functions;
 import com.example.operations.AccountOperation;
@@ -14,9 +15,7 @@ import cyclops.control.Try;
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -50,9 +49,11 @@ public class Consolidator {
                 .filter(linesToDiscardPredicate())
                 .map(line -> calculateValidationStatus(line))
                 .map(eOrv -> dealWithALine(eOrv, fxCache, accountCache))
-                .collect(Collectors.groupingBy(t -> t.a));
+                .collect(Collectors.toList());
+                //.collect(Collectors.groupingBy(Either:: isLeft, Collectors.groupingBy(eithr1 -> either1.i)));
 
         //return createFromLines(lines, s -> createTransactionEntry(s), validationPredicate);
+        return null;
     }
 
     private Predicate<String> linesToDiscardPredicate() {
@@ -88,8 +89,8 @@ public class Consolidator {
 
         return errorOrValue.flatMap(line ->
                     Try.withCatch(() -> createTransactionEntry(line), NumberFormatException.class, DateTimeParseException.class)
-                        .mapOrCatch(tran -> lookupAccount(tran, fxCache, accountCache), AccountNotFoundException.class)
-                        .mapOrCatch(tuplePair -> applyFxRate(tuplePair), FXConversionException.class)
+                        .mapOrCatch(tran -> lookupAccount(tran, accountCache), AccountNotFoundException.class)
+                        .mapOrCatch(tuplePair -> applyFxRate(tuplePair, fxCache), FXConversionException.class)
                         .map(tuplePair -> applyTransactionOperation(tuplePair.a, tuplePair.b))
                         .mapFailure(e -> new InvalidTransactionException(buildFailureString(e, line)))
                         .toEither()
@@ -109,12 +110,27 @@ public class Consolidator {
         }
     }
 
-    private Tuple2<Account, TransactionEntry> applyFxRate(Tuple2<Account, TransactionEntry> tuplePair) throws FXConversionException{
-        return null;
+    private Tuple2<Account, TransactionEntry> applyFxRate(Tuple2<Account, TransactionEntry> tuplePair, FXCache fxCache) throws FXConversionException {
+        TransactionEntry transactionEntry = tuplePair.b;
+        Account account = tuplePair.a;
+        Currency fromCurrency = transactionEntry.currency;
+        TransactionEntry afterApplyingFxRate = fxCache.apply(fromCurrency)
+                .map(fxEntry -> TransactionEntryBuilder.fromATransaction(transactionEntry)
+                        .withTransactionAmount(transactionEntry.transactionAmount.multiply(BigDecimal.valueOf(fxEntry.rate)))
+                        .build()
+                ).orElseThrow(() -> new FXConversionException());
+        return Tuple2.fromValues(tuplePair.a, afterApplyingFxRate);
     }
 
-    private Tuple2<Account, TransactionEntry> lookupAccount(TransactionEntry transactionEntry, FXCache fxCache, AccountCache accountCache) throws AccountNotFoundException {
-        return null;
+    private Tuple2<Account, TransactionEntry> lookupAccount(TransactionEntry transactionEntry, AccountCache accountCache) throws AccountNotFoundException {
+        String lastName = transactionEntry.person.lastName;
+        Date dob = transactionEntry.person.dob;
+        String tfn = transactionEntry.person.tfn;
+
+        final Account account = accountCache.findByAccountId(transactionEntry.accountId)
+                .orElse(accountCache.findByLastNameAndTFNAndDOB(lastName, tfn, dob)
+                        .orElse(accountCache.findByLastNameAndDOB(lastName, dob).orElseThrow(() -> new AccountNotFoundException())));
+        return Tuple2.fromValues(account, transactionEntry);
     }
 
     private Either<RuntimeException, String> calculateValidationStatus(String line) {
