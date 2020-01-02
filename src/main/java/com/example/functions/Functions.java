@@ -26,9 +26,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
-//import cyclops.control.Try;
-//import static cyclops.control.Try.withCatch;
-
 public class Functions {
     public static Predicate<String> nullOrEmptyLinesPredicate = s -> ofNullable(s).orElse("").isEmpty();
     public static Predicate<String> commentedLinesPredicate = s -> s.startsWith("#");

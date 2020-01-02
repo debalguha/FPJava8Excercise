@@ -2,11 +2,9 @@ package com.example.cache;
 
 import com.example.domain.FxEntry;
 
+import javax.annotation.Nonnull;
 import java.io.File;
-import java.util.Currency;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -18,7 +16,8 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
 
     private final Map<Currency, FxEntry> cacheMap;
 
-    public FXCache(File fxFile) {
+    public FXCache(@Nonnull File fxFile) {
+        Objects.requireNonNull(fxFile, "Input file must be not null");
         cacheMap = createFromFile(() -> readFileToLines(fxFile), this::createFxEntries, f -> f.from, identity());
     }
 
@@ -28,7 +27,8 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     }
 
     @Override
-    public Optional<FxEntry> apply(Currency from) {
+    public Optional<FxEntry> apply(@Nonnull  Currency from) {
+        Objects.requireNonNull(from, "From currency must not be null");
         return ofNullable(cacheMap.get(from));
     }
 

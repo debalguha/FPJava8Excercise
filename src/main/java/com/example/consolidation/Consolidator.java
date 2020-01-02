@@ -51,29 +51,6 @@ public class Consolidator {
         //return createFromLines(lines, s -> createTransactionEntry(s), validationPredicate);
         return null;
     }
-
-    private Predicate<String> linesToDiscardPredicate() {
-        return nullOrEmptyLinesPredicate
-                .and(commentedLinesPredicate);
-    }
-
-    private Either<RuntimeException, String> areAllColumnsPresent(String line, int numColumns) {
-        if(columnNumberPredicateFunc.apply(numColumns).test(line)) {
-            return Either.right(line);
-        } else {
-            throw new InsufficientDataException(line);
-        }
-    }
-
-    private Either<RuntimeException, String> areMandatoryColumnsPopulated(String line, int []columns) {
-        if(mandatoryColumnsPredicateFunc.apply(columns).test(line)) {
-            return Either.right(line);
-        } else {
-            throw new InsufficientDataException(line);
-        }
-    }
-
-
     /**
      * should chain all processing , lookups, calculations etc
      * @param errorOrValue
@@ -106,7 +83,6 @@ public class Consolidator {
 
     private Tuple2<Account, TransactionEntry> applyFxRate(Tuple2<Account, TransactionEntry> tuplePair, FXCache fxCache) throws FXConversionException {
         TransactionEntry transactionEntry = tuplePair.b;
-        Account account = tuplePair.a;
         Currency fromCurrency = transactionEntry.currency;
         TransactionEntry afterApplyingFxRate = fxCache.apply(fromCurrency)
                 .map(fxEntry -> TransactionEntryBuilder.fromATransaction(transactionEntry)
@@ -122,13 +98,35 @@ public class Consolidator {
         String tfn = transactionEntry.person.tfn;
 
         final Account account = accountCache.findByAccountId(transactionEntry.accountId)
-                .orElse(accountCache.findByLastNameAndTFNAndDOB(lastName, tfn, dob)
-                        .orElse(accountCache.findByLastNameAndDOB(lastName, dob).orElseThrow(() -> new AccountNotFoundException())));
+                                .orElse(accountCache.findByLastNameAndTFNAndDOB(lastName, tfn, dob)
+                                .orElse(accountCache.findByLastNameAndDOB(lastName, dob)
+                                .orElseThrow(() -> new AccountNotFoundException())));
         return Tuple2.fromValues(account, transactionEntry);
     }
 
     private Either<RuntimeException, String> calculateValidationStatus(String line) {
         return areAllColumnsPresent(line, 9).flatMap(l -> areMandatoryColumnsPopulated(l, new int[]{0,1, 2,3}));
+    }
+
+    private Predicate<String> linesToDiscardPredicate() {
+        return nullOrEmptyLinesPredicate
+                .and(commentedLinesPredicate);
+    }
+
+    private Either<RuntimeException, String> areAllColumnsPresent(String line, int numColumns) {
+        if(columnNumberPredicateFunc.apply(numColumns).test(line)) {
+            return Either.right(line);
+        } else {
+            throw new InsufficientDataException(line);
+        }
+    }
+
+    private Either<RuntimeException, String> areMandatoryColumnsPopulated(String line, int []columns) {
+        if(mandatoryColumnsPredicateFunc.apply(columns).test(line)) {
+            return Either.right(line);
+        } else {
+            throw new InsufficientDataException(line);
+        }
     }
 
 }
