@@ -3,25 +3,21 @@ package com.example.consolidation;
 import com.example.cache.AccountCache;
 import com.example.cache.AccountCacheImpl;
 import com.example.cache.FXCache;
+import com.example.constructs.Either;
+import com.example.constructs.Try;
 import com.example.domain.Account;
 import com.example.domain.TransactionEntry;
 import com.example.domain.TransactionEntryBuilder;
-import com.example.domain.TransactionType;
-import com.example.functions.Functions;
-import com.example.operations.AccountOperation;
-import cyclops.control.Either;
-import cyclops.control.Try;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.time.format.DateTimeParseException;
-import java.util.*;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Function;
+import java.util.Currency;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.example.consolidation.Tuple2.fromValues;
 import static com.example.functions.Functions.*;
 import static com.example.operations.AccountOperation.credit;
 import static com.example.operations.AccountOperation.debit;
@@ -88,14 +84,12 @@ public class Consolidator {
     private Either<RuntimeException, Account> dealWithALine(Either<RuntimeException, String> errorOrValue, FXCache fxCache, AccountCache accountCache) {
 
         return errorOrValue.flatMap(line ->
-                    Try.withCatch(() -> createTransactionEntry(line), NumberFormatException.class, DateTimeParseException.class)
-                        .mapOrCatch(tran -> lookupAccount(tran, accountCache), AccountNotFoundException.class)
-                        .mapOrCatch(tuplePair -> applyFxRate(tuplePair, fxCache), FXConversionException.class)
+                Try.doTry(() -> createTransactionEntry(line))
+                        .map(tran -> lookupAccount(tran, accountCache))
+                        .map(tuplePair -> applyFxRate(tuplePair, fxCache))
                         .map(tuplePair -> applyTransactionOperation(tuplePair.a, tuplePair.b))
-                        .mapFailure(e -> new InvalidTransactionException(buildFailureString(e, line)))
-                        .toEither()
+                        .leftMap(e -> new InvalidTransactionException(buildFailureString(e, line)))
         );
-
     }
 
     private String buildFailureString(RuntimeException e, String transactionEntry) {

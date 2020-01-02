@@ -1,27 +1,32 @@
 package com.example.functions;
 
 import com.example.cache.Person;
+import com.example.constructs.Try;
 import com.example.domain.Account;
 import com.example.domain.FxEntry;
 import com.example.domain.TransactionEntry;
 import com.example.domain.TransactionType;
-import cyclops.control.Try;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Currency;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Strings.emptyToNull;
-import static cyclops.control.Try.withCatch;
 import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
+
+//import cyclops.control.Try;
+//import static cyclops.control.Try.withCatch;
 
 public class Functions {
     public static Predicate<String> nullOrEmptyLinesPredicate = s -> ofNullable(s).orElse("").isEmpty();
@@ -32,15 +37,19 @@ public class Functions {
     };
     public static Function<Integer, Predicate<String>> columnNumberPredicateFunc = i -> s -> s.split(",", -1).length == i;
 
-    public static Try.CheckedSupplier<List<String>, IOException> fileDataSupplier(File inputFile) {
-        return () -> Files.readAllLines(inputFile.toPath());
+    public static List<String> fileDataSupplier(File inputFile) {
+        try {
+            return Files.readAllLines(inputFile.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static <T, K, V> Map<K, V> createFromFile(File fxFile, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
-        return withCatch(fileDataSupplier(fxFile), IOException.class)
-                .onFail(e -> {throw new RuntimeException("Unable to read fx file");})
+    public static <T, K, V> Map<K, V> createFromFile(File inputFile, Function<List<String>, List<T>> lineMapperFunc, Function<T, K> keyFunc, Function<T, V> valueFunc) {
+
+        return Try.doTry(() -> fileDataSupplier(inputFile))
                 .map(lineMapperFunc)
-                .orElse(Collections.emptyList())
+                .orElse(emptyList())
                 .stream().collect(toMap(keyFunc, valueFunc));
     }
 
