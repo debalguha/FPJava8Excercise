@@ -17,11 +17,13 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.example.domain.AccountBuilder.fromAccount;
 import static com.google.common.base.Strings.emptyToNull;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
@@ -42,6 +44,7 @@ public class Functions {
         return stream(intArray).allMatch(i -> split.length > i && !split[i].isEmpty());
     };
     public static Function<Integer, Predicate<String>> columnNumberPredicateFunc = i -> s -> s.split(",", -1).length == i;
+    public static BinaryOperator<Account> accountAggregator = (a, b) -> fromAccount(a).balance(a.balance.add(b.balance)).build();
 
     public static List<String> readFileToLines(File inputFile) {
         try {

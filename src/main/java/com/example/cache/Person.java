@@ -3,10 +3,11 @@ package com.example.cache;
 import com.example.constructs.Try;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.Objects;
+
+import static com.example.constructs.Try.doTry;
+import static java.time.format.DateTimeFormatter.ISO_DATE;
 
 public class Person {
     public final String firstName;
@@ -30,7 +31,7 @@ public class Person {
     }
 
     private static LocalDate parseDate(String s) {
-        return Try.doTry(() ->LocalDate.from( DateTimeFormatter.ISO_DATE.parse(s)))
+        return doTry(() ->LocalDate.from( ISO_DATE.parse(s)))
                 .orElseThrow();
     }
 
@@ -45,5 +46,13 @@ public class Person {
     @Override
     public int hashCode() {
         return Objects.hash(tfn);
+    }
+
+    @Override
+    public String toString() {
+        return firstName + "," +
+                lastName + "," +
+                tfn + "," +
+                ISO_DATE.format(dob);
     }
 }

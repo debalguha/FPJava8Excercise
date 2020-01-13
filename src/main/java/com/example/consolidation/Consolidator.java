@@ -6,22 +6,23 @@ import com.example.cache.FXCache;
 import com.example.constructs.Either;
 import com.example.constructs.Try;
 import com.example.domain.Account;
+import com.example.domain.AccountBuilder;
 import com.example.domain.TransactionEntry;
 import com.example.domain.TransactionEntryBuilder;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Currency;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.example.domain.AccountBuilder.fromAccount;
 import static com.example.functions.Functions.*;
 import static com.example.operations.AccountOperation.credit;
 import static com.example.operations.AccountOperation.debit;
+import static java.util.stream.Collectors.*;
 
 public class Consolidator {
     public final File transactionFile;
@@ -42,12 +43,19 @@ public class Consolidator {
     }
 
     public List<TransactionEntry> createTransactionEntries(List<String> lines, FXCache fxCache, AccountCache accountCache) {
-        lines.stream()
+        final Map<Boolean, List<Either<RuntimeException, Account>>> collectedResult = lines.stream()
                 .filter(linesToDiscardPredicate())
                 .map(line -> calculateValidationStatus(line))
                 .map(eOrv -> dealWithALine(eOrv, fxCache, accountCache))
-                .collect(Collectors.toList());
-                //.collect(Collectors.groupingBy(Either:: isLeft, Collectors.groupingBy(eithr1 -> either1.i)));
+                //.collect(Collectors.toList());
+                .collect(groupingBy(Either::isLeft));
+
+        collectedResult.get(Boolean.FALSE).stream()
+                .map(Either::rightValue)
+                .collect(groupingBy(Account::getAccountId, reducing(accountAggregator)))
+                .values().stream().filter(a -> a.isPresent())
+                .map(a -> a.get().toString())
+                .collect(joining("\n"));
 
         //return createFromLines(lines, s -> createTransactionEntry(s), validationPredicate);
         return null;

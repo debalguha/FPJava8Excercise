@@ -34,20 +34,8 @@ public class Account {
         return accountId;
     }
 
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public Person getPerson() {
-        return person;
-    }
-
     @Override
     public String toString() {
-        return "Account{" +
-                "accountId=" + accountId +
-                ", balance=" + balance +
-                ", person=" + person +
-                '}';
+        return accountId + "," + balance.toString() + person.toString();
     }
 }
