@@ -1,5 +1,7 @@
 package com.example.cache;
 
+import com.example.constructs.Try;
+
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -9,10 +11,10 @@ import java.util.Objects;
 public class Person {
     public final String firstName;
     public final String lastName;
-    public final Date dob;
+    public final LocalDate dob;
     public final String tfn;
 
-    public Person(String firstName, String lastName, Date dob, String tfn) {
+    public Person(String firstName, String lastName, LocalDate dob, String tfn) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.dob = dob;
@@ -20,31 +22,16 @@ public class Person {
     }
 
     public Person(String []split) {
-        this(split[0], split[1], parseDate(split[2]), split[3]);
+        this(split[0], split[1], parseDate(split[3]), split[2]);
     }
 
     public Person(String s) {
         this(s.split(",", -1));
     }
 
-    private static Date parseDate(String s) {
-        return Date.from(LocalDate.from( DateTimeFormatter.ISO_DATE.parse(s)).atStartOfDay(ZoneId.systemDefault()).toInstant());
-    }
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public Date getDob() {
-        return dob;
-    }
-
-    public String getTfn() {
-        return tfn;
+    private static LocalDate parseDate(String s) {
+        return Try.doTry(() ->LocalDate.from( DateTimeFormatter.ISO_DATE.parse(s)))
+                .orElseThrow();
     }
 
     @Override

@@ -11,9 +11,12 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -27,11 +30,16 @@ import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
 public class Functions {
-    public static Predicate<String> nullOrEmptyLinesPredicate = s -> ofNullable(s).orElse("").isEmpty();
-    public static Predicate<String> commentedLinesPredicate = s -> s.startsWith("#");
+    private static Predicate<String> nullOrEmptyLinesPredicate = s -> ofNullable(s).orElse("").isEmpty();
+    public static Predicate<String> notNullOrEmptyLinesPredicate = nullOrEmptyLinesPredicate.negate();
+    private static Predicate<String> commentedLinesPredicate = s -> s.startsWith("#");
+    public static Predicate<String> unCommentedLinesPredicate = commentedLinesPredicate.negate();
+    public static Function<String, Predicate<Account>> accountPredicateByLastNameFunc = lastName -> a -> lastName.equals(a.person.lastName);
+    public static Function<LocalDate, Predicate<Account>> accountPredicateByDobFunc = dob -> a -> dob.atStartOfDay(ZoneId.systemDefault()).isEqual(a.person.dob.atStartOfDay(ZoneId.systemDefault()));
+    public static Function<String, Predicate<Account>> accountPredicateByTfnFunc = tfn -> a -> tfn.equals(a.person.tfn);
     public static Function<int[], Predicate<String>> mandatoryColumnsPredicateFunc = intArray -> s -> {
-        String[] split = s.split(",", -1);
-        return stream(intArray).allMatch(i -> !split[i].isEmpty());
+        String[] split = ofNullable(s).orElse("").split(",", -1);
+        return stream(intArray).allMatch(i -> split.length > i && !split[i].isEmpty());
     };
     public static Function<Integer, Predicate<String>> columnNumberPredicateFunc = i -> s -> s.split(",", -1).length == i;
 
@@ -53,21 +61,22 @@ public class Functions {
 
     public static <T> List<T> createFromLines(List<String> lines, Function<String, T> func, Predicate<String> validationPredicate) {
         return lines.stream()
+                .skip(1)
                 .filter(validationPredicate)
                 .map(func)
                 .collect(Collectors.toList());
     }
 
-    public static Account createAccount(String s) {
+    public static Optional<Account> createAccount(String s) {
         String[] split = s.split(",", -1);
         long accountId = Long.valueOf(split[0]);
         BigDecimal balance = new BigDecimal(split[1]);
-        return new Account(accountId, balance, new Person(stream(split).skip(2).collect(joining())));
+        return Try.doTry(() -> new Account(accountId, balance, new Person(stream(split).skip(2).collect(joining(","))))).toOptional();
     }
 
     public static FxEntry createFXEntry(String s) {
         String[] split = s.split(",", -1);
-        return new FxEntry(Currency.getInstance(split[0]), Currency.getInstance("AUD"), Double.valueOf(split[1]), ofNullable(emptyToNull(split[2])));
+        return new FxEntry(Currency.getInstance(split[0]), Currency.getInstance(split[1]), Double.valueOf(split[2]), ofNullable(emptyToNull(split[3])));
     }
 
     public static TransactionEntry createTransactionEntry(String s) {

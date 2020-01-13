@@ -2,6 +2,7 @@ package com.example.constructs;
 
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -61,6 +62,10 @@ public interface Try<E extends RuntimeException, V> extends Either<E, V> {
 		}
 		return value();
 	}
+
+	default Optional<V> toOptional() {
+	    return Optional.ofNullable(valueOrElse(null));
+    }
 	static <E extends RuntimeException, V> Try<E, V> doTry(Supplier<V> operation) {
 		try {
 			return Try.success(operation.get());
@@ -79,6 +84,7 @@ public interface Try<E extends RuntimeException, V> extends Either<E, V> {
 	static <E extends RuntimeException, V> Try<E, V> success(V v) {
 		return new Success(v);
 	}
+
 }
 
 final class Success<E extends RuntimeException, V> implements Try<E, V> {

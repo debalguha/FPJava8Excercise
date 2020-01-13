@@ -1,1 +1,8 @@
 From Currency, To Currency, Rate, Via Currency
+USD,AUD,1.2,
+GBP,AUD,1.8,
+#INR,AUD,0.5
+
+
+HKD,
+EUR,AUD,1.6,

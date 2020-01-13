@@ -22,7 +22,7 @@ public class FXCache implements Function<Currency, Optional<FxEntry>> {
     }
 
     private List<FxEntry> createFxEntries(List<String> lines) {
-        Predicate<String> validationPredicate = nullOrEmptyLinesPredicate.and(commentedLinesPredicate).and(columnNumberPredicateFunc.apply(3));
+        Predicate<String> validationPredicate = notNullOrEmptyLinesPredicate.and(unCommentedLinesPredicate).and(columnNumberPredicateFunc.apply(4));
         return createFromLines(lines, s -> createFXEntry(s), validationPredicate);
     }
 

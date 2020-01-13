@@ -11,6 +11,7 @@ import com.example.domain.TransactionEntryBuilder;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Currency;
 import java.util.Date;
 import java.util.List;
@@ -94,7 +95,7 @@ public class Consolidator {
 
     private Tuple2<Account, TransactionEntry> lookupAccount(TransactionEntry transactionEntry, AccountCache accountCache) throws AccountNotFoundException {
         String lastName = transactionEntry.person.lastName;
-        Date dob = transactionEntry.person.dob;
+        LocalDate dob = transactionEntry.person.dob;
         String tfn = transactionEntry.person.tfn;
 
         final Account account = accountCache.findByAccountId(transactionEntry.accountId)
@@ -109,8 +110,8 @@ public class Consolidator {
     }
 
     private Predicate<String> linesToDiscardPredicate() {
-        return nullOrEmptyLinesPredicate
-                .and(commentedLinesPredicate);
+        return notNullOrEmptyLinesPredicate
+                .and(unCommentedLinesPredicate);
     }
 
     private Either<RuntimeException, String> areAllColumnsPresent(String line, int numColumns) {
