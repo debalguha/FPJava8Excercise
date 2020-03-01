@@ -1,10 +1,22 @@
 package au.com.superchoice.spike;
 
-import au.com.superchoice.spike.domain.Cover;
+import au.com.superchoice.spike.domain.*;
+import com.google.common.collect.Maps;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.annotations.Nullable;
+import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.flowables.GroupedFlowable;
+import io.reactivex.rxjava3.functions.BiFunction;
+import io.reactivex.rxjava3.functions.Function;
+import org.apache.commons.compress.utils.Lists;
+import org.reactivestreams.Publisher;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Optional.*;
+import static org.apache.commons.compress.utils.Lists.newArrayList;
 
 public class Stages {
     public static Map<String, String> columnMapping(Map<String, String> dataMap) {
@@ -17,13 +29,54 @@ public class Stages {
         return dataMap;
     }
     public static MatchingOutCome runMatching(GroupedFlowable<String, Map<String, String>> groupedFlowable) {
-        return null;
+        @Nullable final String memberClientIdentifier = groupedFlowable.getKey();
+        return groupedFlowable.map(m -> createMatchingOutcome(m, memberClientIdentifier))
+                .reduce((mo1, mo2) -> mo1.mergeOther(mo2)).blockingGet();
+
+    }
+    public static MatchingOutCome createMatchingOutcome(Map<String, String> dataMap, String memberClientIdentifier) {
+        final Contribution contribution = createContribution(dataMap, memberClientIdentifier);
+        return new MatchingOutCome(contribution, createCovers(dataMap, contribution));
+    }
+    public static List<Cover> createCovers(Map<String, String> dataMap, Contribution contribution) {
+        List<Cover> covers = newArrayList();
+        if(dataMap.get("BTCover") != null)
+            covers.add(createLifeCover(dataMap, contribution));
+        if(dataMap.get("VDCover") != null)
+            covers.add(createTPDCover(dataMap, contribution));
+        if(dataMap.get("BDCover") != null)
+            covers.add(createIPCover(dataMap, contribution));
+        if(dataMap.get("VTCover") != null)
+            covers.add(createSCBCover(dataMap, contribution));
+        return covers;
     }
     public static Cover persist(MatchingOutCome outCome){
         return crushCovers(outCome.covers);
     }
 
-    private static Cover crushCovers(List<Cover> covers) {
-        return null;
+    public static Cover crushCovers(List<Cover> covers) {
+        return covers.get(0);
     }
+    public static Contribution createContribution(Map<String, String> dataMap, String memberNumber) {
+        String surname = dataMap.get("Surname");
+        String givenName = dataMap.get("GivenName");
+        String employerAbn = "12345676";
+        String fundUsi = "123456";
+        String address = dataMap.get("Address1");
+        return new Contribution(new Member(new Employee(new Employer(employerAbn), surname, givenName, address), new Fund(fundUsi), memberNumber));
+    }
+
+    public static Cover createLifeCover(Map<String, String> dataMap, Contribution contribution) {
+        return new Cover(Cover.CoverType.LIFE, ofNullable(dataMap.get("BTCover")).map(Double::parseDouble).orElse(0d), contribution);
+    }
+    public static Cover createTPDCover(Map<String, String> dataMap, Contribution contribution) {
+        return new Cover(Cover.CoverType.TPD, ofNullable(dataMap.get("VDCover")).map(Double::parseDouble).orElse(0d), contribution);
+    }
+    public static Cover createIPCover(Map<String, String> dataMap, Contribution contribution) {
+        return new Cover(Cover.CoverType.IP, ofNullable(dataMap.get("BDCover")).map(Double::parseDouble).orElse(0d), contribution);
+    }
+    public static Cover createSCBCover(Map<String, String> dataMap, Contribution contribution) {
+        return new Cover(Cover.CoverType.SCB, ofNullable(dataMap.get("VTCover")).map(Double::parseDouble).orElse(0d), contribution);
+    }
+
 }

@@ -13,4 +13,7 @@ public class MatchingOutCome {
         this.contribution = contribution;
         this.covers = covers;
     }
+    public MatchingOutCome mergeOther(MatchingOutCome otherOutcome) {
+        this.covers.addAll(otherOutcome.covers);
+    }
 }
