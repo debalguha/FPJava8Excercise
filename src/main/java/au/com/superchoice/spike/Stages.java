@@ -1,17 +1,12 @@
 package au.com.superchoice.spike;
 
 import au.com.superchoice.spike.domain.*;
-import com.google.common.collect.Maps;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.annotations.Nullable;
-import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.flowables.GroupedFlowable;
-import io.reactivex.rxjava3.functions.BiFunction;
-import io.reactivex.rxjava3.functions.Function;
-import org.apache.commons.compress.utils.Lists;
-import org.reactivestreams.Publisher;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,12 +23,17 @@ public class Stages {
     public static Map<String, String> juelEnrichment(Map<String, String> dataMap) {
         return dataMap;
     }
-    public static MatchingOutCome runMatching(GroupedFlowable<String, Map<String, String>> groupedFlowable) {
+    public static @NonNull Maybe<MatchingOutCome> runMatching(GroupedFlowable<String, Map<String, String>> groupedFlowable) {
         @Nullable final String memberClientIdentifier = groupedFlowable.getKey();
-        return groupedFlowable.map(m -> createMatchingOutcome(m, memberClientIdentifier))
-                .reduce((mo1, mo2) -> mo1.mergeOther(mo2)).blockingGet();
-
+        @NonNull final Maybe<MatchingOutCome> matchingOutComeMaybe = groupedFlowable.map(m -> createMatchingOutcome(m, memberClientIdentifier))
+                .doOnError(e -> e.printStackTrace())
+                .reduce((mo1, mo2) -> mo1.mergeOther(mo2))
+                .subscribeOn(Schedulers.computation());
+        return matchingOutComeMaybe;
     }
+
+
+
     public static MatchingOutCome createMatchingOutcome(Map<String, String> dataMap, String memberClientIdentifier) {
         final Contribution contribution = createContribution(dataMap, memberClientIdentifier);
         return new MatchingOutCome(contribution, createCovers(dataMap, contribution));
@@ -67,16 +67,20 @@ public class Stages {
     }
 
     public static Cover createLifeCover(Map<String, String> dataMap, Contribution contribution) {
-        return new Cover(Cover.CoverType.LIFE, ofNullable(dataMap.get("BTCover")).map(Double::parseDouble).orElse(0d), contribution);
+        return new Cover(Cover.CoverType.LIFE, ofNullable(dataMap.get("BTCover")).filter(s -> !s.isBlank()).orElse("0"), contribution);
     }
     public static Cover createTPDCover(Map<String, String> dataMap, Contribution contribution) {
-        return new Cover(Cover.CoverType.TPD, ofNullable(dataMap.get("VDCover")).map(Double::parseDouble).orElse(0d), contribution);
+        return new Cover(Cover.CoverType.TPD, ofNullable(dataMap.get("VDCover")).filter(s -> !s.isBlank()).orElse("0"), contribution);
     }
     public static Cover createIPCover(Map<String, String> dataMap, Contribution contribution) {
-        return new Cover(Cover.CoverType.IP, ofNullable(dataMap.get("BDCover")).map(Double::parseDouble).orElse(0d), contribution);
+        return new Cover(Cover.CoverType.IP, ofNullable(dataMap.get("BDCover")).filter(s -> !s.isBlank()).orElse("0"), contribution);
     }
     public static Cover createSCBCover(Map<String, String> dataMap, Contribution contribution) {
-        return new Cover(Cover.CoverType.SCB, ofNullable(dataMap.get("VTCover")).map(Double::parseDouble).orElse(0d), contribution);
+        return new Cover(Cover.CoverType.SCB, ofNullable(dataMap.get("VTCover")).filter(s -> !s.isBlank()).orElse("0"), contribution);
     }
 
+    public static MatchingOutCome match(Map<String, String> dataMap) {
+        String memberClientIdentifier = dataMap.get("Member");
+        return createMatchingOutcome(dataMap, memberClientIdentifier);
+    }
 }

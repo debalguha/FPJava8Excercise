@@ -1,6 +1,16 @@
 package au.com.superchoice.spike.domain;
 
 public class Employee {
+    @Override
+    public String toString() {
+        return "Employee{" +
+                "employer=" + employer +
+                ", surname='" + surname + '\'' +
+                ", givenName='" + givenName + '\'' +
+                ", address='" + address + '\'' +
+                '}';
+    }
+
     public final Employer employer;
     public final String surname;
     public final String givenName;

@@ -15,5 +15,14 @@ public class MatchingOutCome {
     }
     public MatchingOutCome mergeOther(MatchingOutCome otherOutcome) {
         this.covers.addAll(otherOutcome.covers);
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "MatchingOutCome{" +
+                "contribution=" + contribution +
+                ", covers=" + covers +
+                '}';
     }
 }

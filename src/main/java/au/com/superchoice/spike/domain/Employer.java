@@ -6,4 +6,11 @@ public class Employer {
     public Employer(String employerAbn) {
         this.employerAbn = employerAbn;
     }
+
+    @Override
+    public String toString() {
+        return "Employer{" +
+                "employerAbn='" + employerAbn + '\'' +
+                '}';
+    }
 }

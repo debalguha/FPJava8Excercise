@@ -1,13 +1,11 @@
 package au.com.superchoice.spike;
 
-import au.com.superchoice.spike.domain.Cover;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
-import io.reactivex.rxjava3.flowables.GroupedFlowable;
-import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.disposables.Disposable;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -19,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -28,22 +25,34 @@ import static java.util.stream.Collectors.toMap;
 
 public class SpreadSheetTest {
     public static void main(String args[]) throws Exception {
-        Path inputCSV = Path.of(URI.create(args[0]));
-        @NonNull final List<Cover> coversCreated = Flowable.fromObservable(
+        Path inputCSV = Path.of(URI.create("file:///"+args[0]));
+
+       /* @NonNull final Disposable disposable = Flowable.fromObservable(
                 Observable.<Map<String, String>>create(emitter -> readCSVAndEmitRecord(inputCSV, emitter)), BackpressureStrategy.BUFFER)
                 .map(Stages::columnMapping)
                 .map(Stages::regExEnrichment)
                 .map(Stages::juelEnrichment)
                 .groupBy(m -> m.get("Member"))
                 .map(Stages::runMatching)
-                .map(Stages::persist)
-                .toList().blockingGet();
-        coversCreated.forEach(System.out:: println);
+                .flatMap(matchingOutComeMaybe -> matchingOutComeMaybe.doOnError(e -> e.printStackTrace()).map(Stages::persist).toFlowable())
+                .toList()
+                .doOnError(e -> e.printStackTrace())
+                .subscribe(covers -> System.out.println(covers));*/
+        Flowable.fromObservable(
+                Observable.<Map<String, String>>create(emitter -> readCSVAndEmitRecord(inputCSV, emitter)), BackpressureStrategy.BUFFER)
+                .map(Stages::columnMapping)
+                .map(Stages::regExEnrichment)
+                .map(Stages::juelEnrichment)
+                .map(Stages:: match)
+                .subscribe(covers -> System.out.println(covers));
+        //disposable.dispose();
+        Thread.sleep(1000000);
+        System.out.println("End");
     }
 
     private static void readCSVAndEmitRecord(Path inputCSV, ObservableEmitter<Map<String, String>> emitter) {
         try {
-            final CSVParser csvParser = new CSVParser(Files.newBufferedReader(inputCSV),CSVFormat.DEFAULT);
+            final CSVParser csvParser = new CSVParser(Files.newBufferedReader(inputCSV),CSVFormat.DEFAULT.withIgnoreEmptyLines().withFirstRecordAsHeader());
             Map<String, String> variables = new HashMap<>();
             while(csvParser.iterator().hasNext()) {
                 final CSVRecord csvRecord = csvParser.iterator().next();

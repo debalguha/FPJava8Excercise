@@ -2,7 +2,6 @@ package com.example.monad.state;
 
 import cyclops.data.HashMap;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
@@ -13,12 +12,17 @@ import static java.util.Collections.emptyList;
 
 public class PortfolioProcessor<S, A> {
     public static final Function<Message, Function<StockPortfolio, StockPortfolio>> update =
-        message -> switch (message.messageType()) {
-            case TRANSACTION ->
-                doTransaction((TransactionMessage) message);
-            case CURRENCY ->
-                changeCurrency((CurrencyMessage) message);
-            default -> Function.identity();
+        message -> {
+            Function<StockPortfolio, StockPortfolio> func;
+            switch (message.messageType()) {
+                case TRANSACTION:
+                    func = doTransaction((TransactionMessage) message);
+                case CURRENCY:
+                    func = changeCurrency((CurrencyMessage) message);
+                default:
+                    func = Function.identity();
+            }
+            return func;
         };
 
     public static <S, A> State<S, A> unit(A a) {
@@ -43,10 +47,12 @@ public class PortfolioProcessor<S, A> {
     }
 
     private static Function<StockPortfolio, StockPortfolio> doTransaction(TransactionMessage message) {
-        return switch(message.transactionType) {
-            case BUY -> portfolio -> buy(message, portfolio);
-            case SELL -> portfolio ->sell(message, portfolio);
+        Function<StockPortfolio, StockPortfolio> func = Function.identity();
+        switch(message.transactionType) {
+            case BUY: func = portfolio -> buy(message, portfolio);
+            case SELL: func = portfolio ->sell(message, portfolio);
         };
+        return func;
     }
 
     public static StockPortfolio buy(TransactionMessage message, StockPortfolio portfolio) {
