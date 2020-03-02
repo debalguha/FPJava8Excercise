@@ -6,47 +6,43 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.awaitility.Awaitility;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.time.Duration.ofSeconds;
 import static java.util.stream.Collectors.toMap;
+import static org.awaitility.Awaitility.await;
 
 public class SpreadSheetTest {
     public static void main(String args[]) throws Exception {
         Path inputCSV = Path.of(URI.create("file:///"+args[0]));
 
-       /* @NonNull final Disposable disposable = Flowable.fromObservable(
-                Observable.<Map<String, String>>create(emitter -> readCSVAndEmitRecord(inputCSV, emitter)), BackpressureStrategy.BUFFER)
-                .map(Stages::columnMapping)
-                .map(Stages::regExEnrichment)
-                .map(Stages::juelEnrichment)
-                .groupBy(m -> m.get("Member"))
-                .map(Stages::runMatching)
-                .flatMap(matchingOutComeMaybe -> matchingOutComeMaybe.doOnError(e -> e.printStackTrace()).map(Stages::persist).toFlowable())
-                .toList()
-                .doOnError(e -> e.printStackTrace())
-                .subscribe(covers -> System.out.println(covers));*/
         Flowable.fromObservable(
                 Observable.<Map<String, String>>create(emitter -> readCSVAndEmitRecord(inputCSV, emitter)), BackpressureStrategy.BUFFER)
+                .observeOn(Schedulers.computation())
                 .map(Stages::columnMapping)
                 .map(Stages::regExEnrichment)
                 .map(Stages::juelEnrichment)
                 .map(Stages:: match)
-                .subscribe(covers -> System.out.println(covers));
-        //disposable.dispose();
-        Thread.sleep(1000000);
+                .groupBy(mo -> mo.contribution.member.memberNumber)
+                .map(gf -> gf.reduce((mo1, mo2) -> mo1.mergeOther(mo2)).map(MatchingOutCome::toMap))
+                .subscribe(matchingOutComeMaybe -> matchingOutComeMaybe.subscribe(mo -> System.out.println(mo)));
+        Thread.sleep(3000);
         System.out.println("End");
     }
 

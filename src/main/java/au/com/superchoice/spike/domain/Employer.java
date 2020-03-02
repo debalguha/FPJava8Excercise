@@ -1,6 +1,9 @@
 package au.com.superchoice.spike.domain;
 
-public class Employer {
+import java.util.HashMap;
+import java.util.Map;
+
+public class Employer implements Mappable {
     public final String employerAbn;
 
     public Employer(String employerAbn) {
@@ -12,5 +15,12 @@ public class Employer {
         return "Employer{" +
                 "employerAbn='" + employerAbn + '\'' +
                 '}';
+    }
+
+    @Override
+    public Map<String, String> toMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("abn", employerAbn);
+        return map;
     }
 }

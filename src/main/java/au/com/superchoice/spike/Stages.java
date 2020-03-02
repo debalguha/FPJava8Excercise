@@ -1,6 +1,7 @@
 package au.com.superchoice.spike;
 
 import au.com.superchoice.spike.domain.*;
+import com.google.common.base.Strings;
 import io.reactivex.rxjava3.annotations.NonNull;
 import io.reactivex.rxjava3.annotations.Nullable;
 import io.reactivex.rxjava3.core.Maybe;
@@ -40,13 +41,13 @@ public class Stages {
     }
     public static List<Cover> createCovers(Map<String, String> dataMap, Contribution contribution) {
         List<Cover> covers = newArrayList();
-        if(dataMap.get("BTCover") != null)
+        if(!Strings.isNullOrEmpty(dataMap.get("BTCover")))
             covers.add(createLifeCover(dataMap, contribution));
-        if(dataMap.get("VDCover") != null)
+        if(!Strings.isNullOrEmpty(dataMap.get("VDCover")))
             covers.add(createTPDCover(dataMap, contribution));
-        if(dataMap.get("BDCover") != null)
+        if(!Strings.isNullOrEmpty(dataMap.get("BDCover")))
             covers.add(createIPCover(dataMap, contribution));
-        if(dataMap.get("VTCover") != null)
+        if(!Strings.isNullOrEmpty(dataMap.get("VTCover")))
             covers.add(createSCBCover(dataMap, contribution));
         return covers;
     }

@@ -3,7 +3,7 @@ package au.com.superchoice.spike.domain;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Cover {
+public class Cover implements Mappable{
     public enum CoverType{
         LIFE, TPD, IP, SCB
     }
@@ -22,7 +22,7 @@ public class Cover {
         return "Cover{" +
                 "coverType=" + coverType +
                 ", coverAmount=" + coverAmount +
-                ", contribution=" + contribution +
+                ", member=" + contribution.member.memberNumber +
                 '}';
     }
 

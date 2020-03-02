@@ -1,6 +1,9 @@
 package au.com.superchoice.spike.domain;
 
-public class Member {
+import java.util.HashMap;
+import java.util.Map;
+
+public class Member implements Mappable {
     public final Employee employee;
     public final Fund fund;
     public final String memberNumber;
@@ -18,5 +21,14 @@ public class Member {
         this.employee = employee;
         this.fund = fund;
         this.memberNumber = memberNumber;
+    }
+
+    @Override
+    public Map<String, String> toMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("MemberNumber", memberNumber);
+        map.putAll(employee.toMap());
+        map.putAll(fund.toMap());
+        return map;
     }
 }

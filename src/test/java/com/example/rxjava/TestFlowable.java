@@ -47,7 +47,7 @@ public class TestFlowable {
 
     @Test
     public void testBasicGroupByFlowableReduceIntoMultiMapWithIterable() throws Exception {
-        Flowable<GroupedFlowable<String, Integer>> groupedFlowable =
+        /*Flowable<GroupedFlowable<String, Integer>> groupedFlowable =
                 Flowable.range(1, 10).groupBy(integer -> {
                     if (integer % 2 == 0) return "Even";
                     else return "Odd";
@@ -66,13 +66,17 @@ public class TestFlowable {
 //        result.get("Odd").forEach(System.out:: println);
 
 
-        System.out.println("######");
-        Flowable.range(1, 10).observeOn(from(newFixedThreadPool(10))).subscribe(i -> System.out.print(i)).dispose();
-        Flowable.range(1, 10).observeOn(from(newFixedThreadPool(10))).blockingForEach(i -> System.out.print(i));
-        groupedFlowable.subscribe(g -> resultIter.put(g.getKey(), g.blockingIterable(10)));
+        System.out.println("######");*/
+        Flowable.range(1, 10).observeOn(Schedulers.computation()).doOnComplete(() -> System.out.println("Subs")).subscribe(i -> System.out.print(i));
+        //Flowable.range(1, 10).observeOn(from(newFixedThreadPool(10))).doOnComplete(() -> System.out.println("Subs")).subscribe(i -> System.out.print(i));
+        System.out.println();
+        Flowable.range(1, 10).observeOn(from(newFixedThreadPool(10))).doOnComplete(() -> System.out.println("Blocks")).blockingForEach(i -> System.out.print(i));
+        /*groupedFlowable.subscribe(g -> resultIter.put(g.getKey(), g.blockingIterable(10)));
         groupedFlowable.subscribe(g -> g.blockingForEach(i -> System.out.print(i)));
         resultIter.get("Even").forEach(System.out:: println);
-        resultIter.get("Odd").forEach(System.out:: println);
-        Thread.sleep(2000);
+        resultIter.get("Odd").forEach(System.out:: println);*/
+        Thread.sleep(100000l);
+        System.out.println("Ending");
+
     }
 }
