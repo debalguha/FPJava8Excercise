@@ -69,12 +69,7 @@ public class PortfolioProcessor<S, A> {
 
     public final StockPortfolio processMany(StockPortfolio startState, List<Message> messages) {
         final StockPortfolio finalState = null;
-        return messages.stream().reduce(startState, (portfolio, message) -> update.apply(message).apply(portfolio), new BinaryOperator<StockPortfolio>() {
-            @Override
-            public StockPortfolio apply(StockPortfolio portfolio, StockPortfolio portfolio2) {
-                return null;
-            }
-        });
+        return messages.stream().reduce(startState, (portfolio, message) -> update.apply(message).apply(portfolio), (portfolio, portfolio2) -> null);
     }
 
 }
